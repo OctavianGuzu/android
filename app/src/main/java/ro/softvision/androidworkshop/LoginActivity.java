@@ -1,5 +1,6 @@
 package ro.softvision.androidworkshop;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -49,7 +50,12 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private void performLogin(String username, String password) {
         //  TODO: make a network call and authenticate the user
         if ("password".equals(password)) {
-            Toast.makeText(this, "Logging in with " + username + " and " + password + "...", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(this, ProfileActivity.class);
+            //  Now we can send some extra information to the Profile screen
+            intent.putExtra(Contract.ProfileActivity.USERNAME, username);
+            startActivity(intent);
+            //  We no longer need the Login screen
+            finish();
         } else {
             mUsername.setError("Invalid Username");
             mPassword.setError("Invalid Password");
