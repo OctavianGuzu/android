@@ -44,8 +44,8 @@
         android:id="@+id/username"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:hint="Username"
+        android:layout_marginTop="@dimen/margin_large"
+        android:hint="@string/username"
         android:background="@android:color/transparent"
         android:gravity="center"/>
 
@@ -53,8 +53,8 @@
         android:id="@+id/password"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:hint="Password"
+        android:layout_marginTop="@dimen/margin_large"
+        android:hint="@string/password"
         android:background="@android:color/transparent"
         android:gravity="center"
         android:inputType="textPassword"/>
@@ -63,8 +63,8 @@
         android:id="@+id/login_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Login"
-        android:background="#9EDAEF"/>
+        android:layout_marginTop="@dimen/margin_large"
+        android:text="@string/login"
+        android:background="@color/octoBlue"/>
 
 </LinearLayout>

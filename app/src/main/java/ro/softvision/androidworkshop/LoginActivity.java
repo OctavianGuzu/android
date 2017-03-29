@@ -1,6 +1,8 @@
 package ro.softvision.androidworkshop;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -34,6 +36,13 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         if (getSupportActionBar() != null) {
             getSupportActionBar().hide();
         }
+
+        //  Check if user already logged in
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        if (preferences.getBoolean(Contract.Preferences.LOGGED_IN, false)) {
+            //  Go directly to profile screen
+            goToProfileScreen(preferences.getString(Contract.Preferences.USERNAME, null));
+        }
     }
 
     @Override
@@ -50,16 +59,26 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private void performLogin(String username, String password) {
         //  TODO: make a network call and authenticate the user
         if ("password".equals(password)) {
-            Intent intent = new Intent(this, ProfileActivity.class);
-            //  Now we can send some extra information to the Profile screen
-            intent.putExtra(Contract.ProfileActivity.USERNAME, username);
-            startActivity(intent);
-            //  We no longer need the Login screen
-            finish();
+            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+            preferences.edit()
+                    .putBoolean(Contract.Preferences.LOGGED_IN, true)
+                    .putString(Contract.Preferences.USERNAME, username)
+                    .apply();
+
+            goToProfileScreen(username);
         } else {
             mUsername.setError("Invalid Username");
             mPassword.setError("Invalid Password");
             Toast.makeText(this, "Invalid Username or Password", Toast.LENGTH_LONG).show();
         }
+    }
+
+    private void goToProfileScreen(String username) {
+        Intent intent = new Intent(this, ProfileActivity.class);
+        //  Now we can send some extra information to the Profile screen
+        intent.putExtra(Contract.ProfileActivity.USERNAME, username);
+        startActivity(intent);
+        //  We no longer need the Login screen
+        finish();
     }
 }

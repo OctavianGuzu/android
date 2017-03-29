@@ -1,10 +1,16 @@
 package ro.softvision.androidworkshop;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.UnderlineSpan;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -84,5 +90,30 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
                         Toast.LENGTH_SHORT).show();
                 break;
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.profile_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.logout:
+                logOut();
+                break;
+        }
+        return true;
+    }
+
+    private void logOut() {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        preferences.edit().putBoolean(Contract.Preferences.LOGGED_IN, false).apply();
+
+        startActivity(new Intent(this, LoginActivity.class));
+        finish();
     }
 }

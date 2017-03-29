@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="8dp"
+    android:padding="@dimen/padding_medium"
     android:orientation="vertical"
     tools:context="ro.softvision.androidworkshop.ProfileActivity">
 
@@ -12,19 +12,19 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginBottom="8dp">
+        android:layout_marginBottom="@dimen/margin_medium">
 
         <ImageView
             android:id="@+id/profile_picture"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
+            android:layout_width="@dimen/profile_picture_size"
+            android:layout_height="@dimen/profile_picture_size"
             android:scaleType="centerInside"
-            android:layout_marginRight="8dp"
+            android:layout_marginRight="@dimen/margin_medium"
             tools:src="@drawable/octocat"/>
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="80dp"
+            android:layout_height="@dimen/profile_picture_size"
             android:orientation="vertical"
             android:gravity="center_vertical">
 
@@ -81,7 +81,7 @@
             android:layout_height="wrap_content"
             android:textSize="18sp"
             android:gravity="end"
-            android:textColor="#1C77FF"
+            android:textColor="@color/profileBlue"
             android:textStyle="bold"
             tools:text="Bucharest"/>
 
@@ -98,7 +98,7 @@
             android:layout_height="wrap_content"
             android:textSize="18sp"
             android:textStyle="bold"
-            android:text="Email"/>
+            android:text="@string/email"/>
 
         <TextView
             android:id="@+id/email"
@@ -106,7 +106,7 @@
             android:layout_height="wrap_content"
             android:textSize="18sp"
             android:gravity="end"
-            android:textColor="#1C77FF"
+            android:textColor="@color/profileBlue"
             android:textStyle="bold"
             tools:text="octocat@github.com"/>
 
@@ -123,7 +123,7 @@
             android:layout_height="wrap_content"
             android:textSize="18sp"
             android:textStyle="bold"
-            android:text="Created"/>
+            android:text="@string/created"/>
 
         <TextView
             android:id="@+id/created"
@@ -131,7 +131,7 @@
             android:layout_height="wrap_content"
             android:textSize="18sp"
             android:gravity="end"
-            android:textColor="#1C77FF"
+            android:textColor="@color/profileBlue"
             android:textStyle="bold"
             tools:text="Thu, May 26, 2015"/>
 
@@ -148,7 +148,7 @@
             android:layout_height="wrap_content"
             android:textSize="18sp"
             android:textStyle="bold"
-            android:text="Updated"/>
+            android:text="@string/updated"/>
 
         <TextView
             android:id="@+id/updated"
@@ -156,7 +156,7 @@
             android:layout_height="wrap_content"
             android:textSize="18sp"
             android:gravity="end"
-            android:textColor="#1C77FF"
+            android:textColor="@color/profileBlue"
             android:textStyle="bold"
             tools:text="Wed, Jun 03, 2016"/>
 
@@ -173,7 +173,7 @@
             android:layout_height="wrap_content"
             android:textSize="18sp"
             android:textStyle="bold"
-            android:text="Public Repos"/>
+            android:text="@string/public_repos"/>
 
         <TextView
             android:id="@+id/public_repos"
@@ -181,7 +181,7 @@
             android:layout_height="wrap_content"
             android:textSize="18sp"
             android:gravity="end"
-            android:textColor="#1C77FF"
+            android:textColor="@color/profileBlue"
             android:textStyle="bold"
             tools:text="23"/>
 
@@ -198,7 +198,7 @@
             android:layout_height="wrap_content"
             android:textSize="18sp"
             android:textStyle="bold"
-            android:text="Private Repos"/>
+            android:text="@string/private_repos"/>
 
         <TextView
             android:id="@+id/private_repos"
@@ -206,7 +206,7 @@
             android:layout_height="wrap_content"
             android:textSize="18sp"
             android:gravity="end"
-            android:textColor="#1C77FF"
+            android:textColor="@color/profileBlue"
             android:textStyle="bold"
             tools:text="7"/>
 
@@ -227,16 +227,16 @@
         android:layout_height="wrap_content"
         android:background="@drawable/blog_btn_bg"
         android:gravity="center"
-        android:padding="8dp">
+        android:padding="@dimen/padding_medium">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@android:color/transparent"
             android:textAllCaps="false"
-            android:text="View Blog"
+            android:text="@string/view_blog"
             android:drawableLeft="@drawable/ic_language_black_24dp"
-            android:drawablePadding="8dp"
+            android:drawablePadding="@dimen/padding_medium"
             android:gravity="center"/>
 
     </LinearLayout>
