@@ -10,4 +10,7 @@
     <string name="public_repos">Public Repos</string>
     <string name="private_repos">Private Repos</string>
     <string name="view_blog">View Blog</string>
+    <string name="public_">Public</string>
+    <string name="repo_name_owner">%1$s (%2$s)</string>
+    <string name="view_repos">View Repositories</string>
 </resources>

@@ -222,6 +222,27 @@
         android:layout_weight="1"/>
 
     <LinearLayout
+        android:id="@+id/btn_repositories"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/blog_btn_bg"
+        android:gravity="center"
+        android:padding="@dimen/padding_medium"
+        android:layout_marginBottom="@dimen/margin_small">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:textAllCaps="false"
+            android:text="@string/view_repos"
+            android:drawableLeft="@drawable/ic_archive_black_24dp"
+            android:drawablePadding="@dimen/padding_medium"
+            android:gravity="center"/>
+
+    </LinearLayout>
+
+    <LinearLayout
         android:id="@+id/btn_blog"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

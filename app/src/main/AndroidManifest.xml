@@ -20,6 +20,8 @@
         </activity>
         <activity android:name=".ProfileActivity">
         </activity>
+        <activity android:name=".RepositoriesActivity">
+        </activity>
     </application>
 
 </manifest>

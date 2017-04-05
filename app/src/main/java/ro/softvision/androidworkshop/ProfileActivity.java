@@ -48,6 +48,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         mPublicRepos = (TextView) findViewById(R.id.public_repos);
         mPrivateRepos = (TextView) findViewById(R.id.private_repos);
         findViewById(R.id.btn_blog).setOnClickListener(this);
+        findViewById(R.id.btn_repositories).setOnClickListener(this);
 
         String username = getIntent().getStringExtra(Contract.ProfileActivity.USERNAME);
         //  TODO: fetch profile based on username
@@ -88,6 +89,9 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
                 //  TODO: open a screen displaying the Blog URL
                 Toast.makeText(this, "Opening Blog screen at URL: " + mDisplayedProfile.getBlogUrl(),
                         Toast.LENGTH_SHORT).show();
+                break;
+            case R.id.btn_repositories:
+                startActivity(new Intent(this, RepositoriesActivity.class));
                 break;
         }
     }
