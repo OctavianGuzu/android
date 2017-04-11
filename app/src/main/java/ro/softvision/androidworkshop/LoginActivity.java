@@ -11,6 +11,13 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import okhttp3.Credentials;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import ro.softvision.androidworkshop.model.GitHub;
+import ro.softvision.androidworkshop.model.LoginData;
+
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener {
     private static final String TAG = "LoginActivity";
 
@@ -56,21 +63,39 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         }
     }
 
-    private void performLogin(String username, String password) {
-        //  TODO: make a network call and authenticate the user
-        if ("password".equals(password)) {
-            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-            preferences.edit()
-                    .putBoolean(Contract.Preferences.LOGGED_IN, true)
-                    .putString(Contract.Preferences.USERNAME, username)
-                    .apply();
+    private void performLogin(final String username, String password) {
+        Call<LoginData> callable = GitHub.Service.Get()
+                .checkAuth(Credentials.basic(username, password));
 
-            goToProfileScreen(username);
-        } else {
-            mUsername.setError("Invalid Username");
-            mPassword.setError("Invalid Password");
-            Toast.makeText(this, "Invalid Username or Password", Toast.LENGTH_LONG).show();
-        }
+        callable.enqueue(new Callback<LoginData>() {
+            @Override
+            public void onResponse(Call<LoginData> call, Response<LoginData> response) {
+                if (response.isSuccessful()) {
+                    SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(LoginActivity.this);
+                    preferences.edit()
+                            .putBoolean(Contract.Preferences.LOGGED_IN, true)
+                            .putString(Contract.Preferences.USERNAME, username)
+                            .apply();
+
+                    goToProfileScreen(username);
+                } else {
+                    switch (response.code()) {
+                        case 403:
+                            Toast.makeText(LoginActivity.this, "Invalid username or password", Toast.LENGTH_SHORT).show();
+                            break;
+                        default:
+                            Toast.makeText(LoginActivity.this, "An error occurred!", Toast.LENGTH_SHORT).show();
+                            break;
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<LoginData> call, Throwable t) {
+                t.printStackTrace();
+                Toast.makeText(LoginActivity.this, "No Internet connection", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void goToProfileScreen(String username) {
