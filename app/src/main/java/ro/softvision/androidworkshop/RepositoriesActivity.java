@@ -1,6 +1,8 @@
 package ro.softvision.androidworkshop;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -12,12 +14,19 @@ import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.List;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import ro.softvision.androidworkshop.model.GitHubService;
 import ro.softvision.androidworkshop.model.Repository;
 
 public class RepositoriesActivity extends AppCompatActivity {
+
+    private Adapter mAdapter;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -29,10 +38,41 @@ public class RepositoriesActivity extends AppCompatActivity {
         //  The Layout Manager is required, we use the vertical linear one
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         //  We also need an adapter to bind our views to the model
-        Adapter adapter = new Adapter();
-        //  TODO: use synced data from GitHub
-        adapter.setData(Repository.getMockRepository());
-        recyclerView.setAdapter(adapter);
+        mAdapter = new Adapter();
+        recyclerView.setAdapter(mAdapter);
+        //  Finally fetch the repositories
+        fetchRepositories();
+    }
+
+    private void fetchRepositories() {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        Call<List<Repository>> repositoriesCall =
+                GitHubService.Service.Get().getUserRepositories(preferences.getString(Contract.Preferences.AUTH_HASH, null),
+                        Contract.RepositoryActivity.AFFILIATION);
+
+        repositoriesCall.enqueue(new Callback<List<Repository>>() {
+            @Override
+            public void onResponse(Call<List<Repository>> call, Response<List<Repository>> response) {
+                if (response.isSuccessful()) {
+                    List<Repository> repositories = response.body();
+                    updateUI(repositories);
+                } else {
+                    Toast.makeText(RepositoriesActivity.this, "An error occurred!", Toast.LENGTH_SHORT).show();
+                    Utils.LogOut(RepositoriesActivity.this);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Repository>> call, Throwable t) {
+                t.printStackTrace();
+                Toast.makeText(RepositoriesActivity.this, "No Internet connection", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void updateUI(List<Repository> repositories) {
+        mAdapter.setData(repositories);
+        mAdapter.notifyDataSetChanged();
     }
 
     private static class Adapter extends RecyclerView.Adapter {
@@ -92,17 +132,19 @@ public class RepositoriesActivity extends AppCompatActivity {
                 //  The views are cached, just set the data
                 mWatcherCount.setText(String.valueOf(repository.getWatchersCount()));
                 mNameAndOwner.setText(itemView.getContext().getString(R.string.repo_name_owner,
-                        repository.getName(), repository.getOwner()));
+                        repository.getName(), repository.getOwner().getLogin()));
                 mDescription.setText(repository.getDescription());
-                mIsPublic.setChecked(!repository.isPrivate());
+                mIsPublic.setChecked(!repository.getPrivate());
 
                 //  TODO: make this pretty when we get to Custom/Compound Views
                 mTopics.removeAllViews();
-                for (String topic : repository.getTopics()) {
-                    TextView topicTV = new TextView(itemView.getContext());
-                    topicTV.setText(topic);
-                    topicTV.setTextColor(ContextCompat.getColor(itemView.getContext(), android.R.color.black));
-                    mTopics.addView(topicTV);
+                if (repository.getTopics() != null) {
+                    for (String topic : repository.getTopics()) {
+                        TextView topicTV = new TextView(itemView.getContext());
+                        topicTV.setText(topic);
+                        topicTV.setTextColor(ContextCompat.getColor(itemView.getContext(), android.R.color.black));
+                        mTopics.addView(topicTV);
+                    }
                 }
             }
         }

@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.SpannableString;
 import android.text.Spanned;
+import android.text.TextUtils;
 import android.text.style.UnderlineSpan;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -16,7 +17,11 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import ro.softvision.androidworkshop.model.GithubProfile;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import ro.softvision.androidworkshop.model.GitHubService;
+import ro.softvision.androidworkshop.model.Profile;
 
 public class ProfileActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -30,7 +35,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     private TextView mUpdated;
     private TextView mPublicRepos;
     private TextView mPrivateRepos;
-    private GithubProfile mDisplayedProfile;
+    private Profile mDisplayedProfile;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,24 +55,47 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         findViewById(R.id.btn_blog).setOnClickListener(this);
         findViewById(R.id.btn_repositories).setOnClickListener(this);
 
-        String username = getIntent().getStringExtra(Contract.ProfileActivity.USERNAME);
-        //  TODO: fetch profile based on username
-        updateUI(GithubProfile.MockGithubProfile);
+        fetchProfile();
     }
 
-    private void updateUI(GithubProfile profile) {
+    private void fetchProfile() {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        Call<Profile> profileCall =
+                GitHubService.Service.Get().getUserProfile(preferences.getString(Contract.Preferences.AUTH_HASH, null));
+
+        profileCall.enqueue(new Callback<Profile>() {
+            @Override
+            public void onResponse(Call<Profile> call, Response<Profile> response) {
+                if (response.isSuccessful()) {
+                    Profile profile = response.body();
+                    updateUI(profile);
+                } else {
+                    Toast.makeText(ProfileActivity.this, "An error occurred!", Toast.LENGTH_SHORT).show();
+                    Utils.LogOut(ProfileActivity.this);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Profile> call, Throwable t) {
+                t.printStackTrace();
+                Toast.makeText(ProfileActivity.this, "No Internet connection", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void updateUI(Profile profile) {
         mDisplayedProfile = profile;
         //  TODO: load an image URL into the ImageView
-        mProfilePicture.setImageResource(R.drawable.octocat);
+//        mProfilePicture.setImageResource(R.drawable.octocat);
         mName.setText(profile.getName());
-        mOrganization.setText(profile.getOrganization());
+        mOrganization.setText(profile.getCompany());
         mBio.setText(profile.getBio());
         setTextUnderlined(mLocation, profile.getLocation());
         setTextUnderlined(mEmail, profile.getEmail());
-        setTextUnderlined(mCreated, profile.getCreated());
-        setTextUnderlined(mUpdated, profile.getUpdated());
-        setTextUnderlined(mPublicRepos, profile.getNumPublicRepos().toString());
-        setTextUnderlined(mPrivateRepos, profile.getNumPrivateRepos().toString());
+        setTextUnderlined(mCreated, profile.getCreatedAt());
+        setTextUnderlined(mUpdated, profile.getUpdatedAt());
+        setTextUnderlined(mPublicRepos, profile.getPublicRepos().toString());
+        setTextUnderlined(mPrivateRepos, profile.getOwnedPrivateRepos().toString());
     }
 
     /**
@@ -77,9 +105,11 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
      * @param text The text to display underlined
      */
     private void setTextUnderlined(TextView textView, String text) {
-        SpannableString content = new SpannableString(text);
-        content.setSpan(new UnderlineSpan(), 0, content.length(), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
-        textView.setText(content);
+        if (!TextUtils.isEmpty(text)) {
+            SpannableString content = new SpannableString(text);
+            content.setSpan(new UnderlineSpan(), 0, content.length(), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+            textView.setText(content);
+        }
     }
 
     @Override
@@ -87,7 +117,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         switch (v.getId()) {
             case R.id.btn_blog:
                 //  TODO: open a screen displaying the Blog URL
-                Toast.makeText(this, "Opening Blog screen at URL: " + mDisplayedProfile.getBlogUrl(),
+                Toast.makeText(this, "Opening Blog screen at URL: " + mDisplayedProfile.getBlog(),
                         Toast.LENGTH_SHORT).show();
                 break;
             case R.id.btn_repositories:
@@ -107,17 +137,9 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.logout:
-                logOut();
+                Utils.LogOut(this);
                 break;
         }
         return true;
-    }
-
-    private void logOut() {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        preferences.edit().putBoolean(Contract.Preferences.LOGGED_IN, false).apply();
-
-        startActivity(new Intent(this, LoginActivity.class));
-        finish();
     }
 }
