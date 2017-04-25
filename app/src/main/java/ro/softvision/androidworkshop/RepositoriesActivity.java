@@ -1,18 +1,17 @@
 package ro.softvision.androidworkshop;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
-import android.support.v4.content.ContextCompat;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,6 +26,7 @@ import ro.softvision.androidworkshop.model.Repository;
 public class RepositoriesActivity extends AppCompatActivity {
 
     private Adapter mAdapter;
+    private boolean mCanShowDetails = false;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -35,10 +35,29 @@ public class RepositoriesActivity extends AppCompatActivity {
 
         //  We need a reference to our RecyclerView
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        mCanShowDetails = (findViewById(R.id.container) != null);
         //  The Layout Manager is required, we use the vertical linear one
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         //  We also need an adapter to bind our views to the model
-        mAdapter = new Adapter();
+        mAdapter = new Adapter(new Adapter.Callback() {
+            @Override
+            public void show(Repository repository) {
+                if (mCanShowDetails) {
+                    Fragment details = RepositoryDetailsFragment.New(repository);
+                    getSupportFragmentManager()
+                            .beginTransaction()
+                            .replace(R.id.container, details)
+                            .commit();
+                } else {
+                    Intent intent = new Intent(RepositoriesActivity.this, RepositoryDetailsActivity.class);
+                    intent.putExtra(Contract.RepositoryDetails.DESCRIPTION, repository.getDescription());
+                    intent.putExtra(Contract.RepositoryDetails.IS_PUBLIC, !repository.getPrivate());
+                    intent.putExtra(Contract.RepositoryDetails.URL, repository.getUrl());
+                    intent.putExtra(Contract.RepositoryDetails.HTML_URL, repository.getHtmlUrl());
+                    startActivity(intent);
+                }
+            }
+        });
         recyclerView.setAdapter(mAdapter);
         //  Finally fetch the repositories
         fetchRepositories();
@@ -77,6 +96,15 @@ public class RepositoriesActivity extends AppCompatActivity {
 
     private static class Adapter extends RecyclerView.Adapter {
         List<Repository> mData;
+        Callback mCallback;
+
+        public Adapter(Callback callback) {
+            mCallback = callback;
+        }
+
+        public interface Callback {
+            void show(Repository repository);
+        }
 
         /**
          * Set our repository list that's the model for our views
@@ -95,9 +123,14 @@ public class RepositoriesActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+        public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
             //  The repository must be bound to the view here
-            ((ViewHolder) holder).bind(mData.get(position));
+            ((ViewHolder) holder).bind(mData.get(position), new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mCallback.show(mData.get(position));
+                }
+            });
         }
 
         @Override
@@ -106,12 +139,7 @@ public class RepositoriesActivity extends AppCompatActivity {
         }
 
         static class ViewHolder extends RecyclerView.ViewHolder {
-
-            private final TextView mWatcherCount;
-            private final TextView mNameAndOwner;
-            private final TextView mDescription;
-            private final LinearLayout mTopics;
-            private final CheckBox mIsPublic;
+            private final TextView mName;
 
             /**
              * Create the ViewHolder that holds the references to our views
@@ -121,31 +149,13 @@ public class RepositoriesActivity extends AppCompatActivity {
                 super(itemView);
 
                 //  Cache all the views we will need when binding the model
-                mWatcherCount = (TextView) itemView.findViewById(R.id.watcher_count);
-                mNameAndOwner = (TextView) itemView.findViewById(R.id.name_owner);
-                mDescription = (TextView) itemView.findViewById(R.id.description);
-                mTopics = (LinearLayout) itemView.findViewById(R.id.topics);
-                mIsPublic = (CheckBox) itemView.findViewById(R.id.is_public);
+                mName = (TextView) itemView.findViewById(R.id.name);
             }
 
-            void bind(Repository repository) {
+            void bind(Repository repository, View.OnClickListener onClickListener) {
                 //  The views are cached, just set the data
-                mWatcherCount.setText(String.valueOf(repository.getWatchersCount()));
-                mNameAndOwner.setText(itemView.getContext().getString(R.string.repo_name_owner,
-                        repository.getName(), repository.getOwner().getLogin()));
-                mDescription.setText(repository.getDescription());
-                mIsPublic.setChecked(!repository.getPrivate());
-
-                //  TODO: make this pretty when we get to Custom/Compound Views
-                mTopics.removeAllViews();
-                if (repository.getTopics() != null) {
-                    for (String topic : repository.getTopics()) {
-                        TextView topicTV = new TextView(itemView.getContext());
-                        topicTV.setText(topic);
-                        topicTV.setTextColor(ContextCompat.getColor(itemView.getContext(), android.R.color.black));
-                        mTopics.addView(topicTV);
-                    }
-                }
+                mName.setText(repository.getName());
+                itemView.setOnClickListener(onClickListener);
             }
         }
     }

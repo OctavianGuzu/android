@@ -14,4 +14,11 @@ public interface Contract {
         String OWNER = "owner";
         String AFFILIATION = OWNER;
     }
+
+    interface RepositoryDetails {
+        String DESCRIPTION = "description";
+        String IS_PUBLIC = "is_public";
+        String URL = "url";
+        String HTML_URL = "html_url";
+    }
 }
