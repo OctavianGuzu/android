@@ -11,3 +11,4 @@ session[number] - Code that should have been completed by the end of that sessio
 | [Session 7](https://github.com/upbsvworkshop/android/tree/session7) | Retrofit: basic networking interface for authentication. |
 | [Session 8](https://github.com/upbsvworkshop/android/tree/session8) | Retrofit: extending the networking interface for fetching the user's profile and owned repository list. |
 | [Session 9](https://github.com/upbsvworkshop/android/tree/session9) | Fragments: added a Repository Details Fragment reused in two different activities |
+| [Session 10](https://github.com/upbsvworkshop/android/tree/session10) | Advanced Fragments: added a DialogFragment for logging out and a PreferenceFragment for the repositories query |

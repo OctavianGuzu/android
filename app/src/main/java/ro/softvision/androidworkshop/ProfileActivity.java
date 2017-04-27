@@ -23,7 +23,7 @@ import retrofit2.Response;
 import ro.softvision.androidworkshop.model.GitHubService;
 import ro.softvision.androidworkshop.model.Profile;
 
-public class ProfileActivity extends AppCompatActivity implements View.OnClickListener {
+public class ProfileActivity extends AppCompatActivity implements View.OnClickListener, Dialog.Callbacks {
 
     private ImageView mProfilePicture;
     private TextView mName;
@@ -36,6 +36,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     private TextView mPublicRepos;
     private TextView mPrivateRepos;
     private Profile mDisplayedProfile;
+    private Dialog mLogoutDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -137,9 +138,22 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.logout:
-                Utils.LogOut(this);
+                mLogoutDialog = Utils.ShowLogOutDialog(this);
                 break;
         }
         return true;
+    }
+
+    @Override
+    public void onDialogPositiveClick(Dialog dialog) {
+        //  Identify which dialog was clicked
+        if (dialog == mLogoutDialog) {
+            Utils.LogOut(this);
+        }
+    }
+
+    @Override
+    public void onDialogNegativeClick(Dialog dialog) {
+        //  Do nothing
     }
 }

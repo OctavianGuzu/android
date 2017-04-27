@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <MultiSelectListPreference
+        android:key="affiliation"
+        android:title="@string/affiliation"
+        android:summary="@string/summary_affiliation"
+        android:entries="@array/entries_affiliation"
+        android:entryValues="@array/entry_values_affiliation"
+        android:dialogTitle="@string/affiliation"
+        android:defaultValue="@array/entry_values_affiliation"/>
+    <ListPreference
+        android:key="sort"
+        android:title="@string/sort"
+        android:summary="@string/summary_sort"
+        android:entries="@array/entries_repository_order"
+        android:entryValues="@array/entry_values_repository_order"
+        android:dialogTitle="@string/sort"
+        android:defaultValue="full_name"/>
+</PreferenceScreen>

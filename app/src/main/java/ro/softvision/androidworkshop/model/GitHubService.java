@@ -19,7 +19,9 @@ public interface GitHubService {
     @GET("/user")
     Call<Profile> getUserProfile(@Header("Authorization") String auth);
     @GET("/user/repos")
-    Call<List<Repository>> getUserRepositories(@Header("Authorization") String auth, @Query("affiliation") String affiliation);
+    Call<List<Repository>> getUserRepositories(@Header("Authorization") String auth,
+                                               @Query("affiliation") String affiliation,
+                                               @Query("sort") String sort);
 
     class Service {
         private static GitHubService sInstance;

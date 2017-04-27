@@ -13,4 +13,12 @@
     <string name="public_">Public</string>
     <string name="repo_name_owner">%1$s (%2$s)</string>
     <string name="view_repos">View Repositories</string>
+    <string name="settings">Settings</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="message_logout">Are you sure you want to log out?</string>
+    <string name="affiliation">Affiliation</string>
+    <string name="summary_affiliation">Affiliation option for fetching repositories</string>
+    <string name="sort">Sort</string>
+    <string name="summary_sort">Sort criteria for repositories</string>
 </resources>

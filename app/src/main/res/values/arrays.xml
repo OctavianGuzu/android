@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="entries_affiliation">
+        <item>Owner</item>
+        <item>Collaborator</item>
+        <item>Organization Member</item>
+    </string-array>
+    <string-array name="entry_values_affiliation">
+        <item>owner</item>
+        <item>collaborator</item>
+        <item>organization_member</item>
+    </string-array>
+    <string-array name="entries_repository_order">
+        <item>Created</item>
+        <item>Updated</item>
+        <item>Pushed</item>
+        <item>Full Name</item>
+    </string-array>
+    <string-array name="entry_values_repository_order">
+        <item>created</item>
+        <item>updated</item>
+        <item>pushed</item>
+        <item>full_name</item>
+    </string-array>
+</resources>

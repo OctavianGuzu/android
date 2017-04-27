@@ -2,8 +2,14 @@ package ro.softvision.androidworkshop;
 
 public interface Contract {
     interface Preferences {
+        String PREFERENCE_SCREEN_TYPE = "preference_screen_type";
         String AUTH_HASH = "auth_hash";
         String USERNAME = ProfileActivity.USERNAME;
+
+        interface Repositories {
+            String AFFILIATION = "affiliation";
+            String SORT = "sort";
+        }
     }
 
     interface ProfileActivity {
@@ -11,8 +17,8 @@ public interface Contract {
     }
 
     interface RepositoryActivity {
-        String OWNER = "owner";
-        String AFFILIATION = OWNER;
+        String AFFILIATION_DEFAULT = "owner,collaborator,organization_member";
+        String SORT_DEFAULT = "full_name";
     }
 
     interface RepositoryDetails {
@@ -20,5 +26,12 @@ public interface Contract {
         String IS_PUBLIC = "is_public";
         String URL = "url";
         String HTML_URL = "html_url";
+    }
+
+    interface Dialog {
+        String POSITIVE_BUTTON = "positive_button";
+        String NEGATIVE_BUTTON = "negative_button";
+        String MESSAGE = "message";
+        String TITLE = "title";
     }
 }

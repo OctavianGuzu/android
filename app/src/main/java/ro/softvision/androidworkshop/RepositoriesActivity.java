@@ -10,6 +10,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -24,6 +27,7 @@ import ro.softvision.androidworkshop.model.GitHubService;
 import ro.softvision.androidworkshop.model.Repository;
 
 public class RepositoriesActivity extends AppCompatActivity {
+    private static final int CODE_SETTINGS = 0;
 
     private Adapter mAdapter;
     private boolean mCanShowDetails = false;
@@ -65,9 +69,15 @@ public class RepositoriesActivity extends AppCompatActivity {
 
     private void fetchRepositories() {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        String affiliation = Contract.RepositoryActivity.AFFILIATION_DEFAULT;
+        if (preferences.contains(Contract.Preferences.Repositories.AFFILIATION)) {
+            affiliation = Utils.SetToRetrofitQueryString(preferences.getStringSet(Contract.Preferences.Repositories.AFFILIATION, null));
+        }
         Call<List<Repository>> repositoriesCall =
-                GitHubService.Service.Get().getUserRepositories(preferences.getString(Contract.Preferences.AUTH_HASH, null),
-                        Contract.RepositoryActivity.AFFILIATION);
+                GitHubService.Service.Get().getUserRepositories(
+                        preferences.getString(Contract.Preferences.AUTH_HASH, null),
+                        affiliation,
+                        preferences.getString(Contract.Preferences.Repositories.SORT, Contract.RepositoryActivity.SORT_DEFAULT));
 
         repositoriesCall.enqueue(new Callback<List<Repository>>() {
             @Override
@@ -92,6 +102,37 @@ public class RepositoriesActivity extends AppCompatActivity {
     private void updateUI(List<Repository> repositories) {
         mAdapter.setData(repositories);
         mAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.repositories_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.settings:
+                Intent intent = Utils.GetSettingsIntent(this, PreferencesActivity.Type.Repositories);
+                startActivityForResult(intent, CODE_SETTINGS);
+                return true;
+        }
+        return false;
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK) {
+            switch (requestCode) {
+                case CODE_SETTINGS:
+                    //  We refresh in case the settings changed
+                    fetchRepositories();
+                    break;
+            }
+        }
     }
 
     private static class Adapter extends RecyclerView.Adapter {
