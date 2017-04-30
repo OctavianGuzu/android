@@ -1,7 +1,11 @@
 package ro.softvision.androidworkshop;
 
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.database.SQLException;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
@@ -18,11 +22,14 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import ro.softvision.androidworkshop.database.DbContract;
+import ro.softvision.androidworkshop.database.MySqlHelper;
 import ro.softvision.androidworkshop.model.GitHubService;
 import ro.softvision.androidworkshop.model.Repository;
 
@@ -31,6 +38,7 @@ public class RepositoriesActivity extends AppCompatActivity {
 
     private Adapter mAdapter;
     private boolean mCanShowDetails = false;
+    private SQLiteDatabase mDbConnection;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -63,8 +71,60 @@ public class RepositoriesActivity extends AppCompatActivity {
             }
         });
         recyclerView.setAdapter(mAdapter);
-        //  Finally fetch the repositories
+
+        // Establish the link to the database
+        MySqlHelper mMySqlHelper = new MySqlHelper(this);
+        mDbConnection = mMySqlHelper.getWritableDatabase();
+
+        // Populate the list with whatever data with have in the local database (so we don't have
+        // an empty screen when fetching repositories from the network). Also, in case of no
+        // internet connection, we still have something to show in the UI.
+        updateUIFromDb();
+        //  Finally attempt to fetch the repositories
         fetchRepositories();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // Don't forget to close the link to the database
+        if (mDbConnection != null) {
+            mDbConnection.close();
+        }
+    }
+
+    private void updateUIFromDb() {
+        // Fetch all of the repositories from the local database
+        Cursor cursor = mDbConnection.query(DbContract.Repository.TABLE, null, null, null, null,
+                null, null, null);
+
+        if (cursor != null) {
+            if (cursor.moveToFirst()) { // Move to the first position in the cursor
+                // Extract all of the column indexes based on the column names
+                List<Repository> myRepos = new ArrayList<>();
+                int idIndex = cursor.getColumnIndex(DbContract.Repository.ID);
+                int nameIndex = cursor.getColumnIndex(DbContract.Repository.NAME);
+                int descriptionIndex = cursor.getColumnIndex(DbContract.Repository.DESCRIPTION);
+                int isPublicIndex = cursor.getColumnIndex(DbContract.Repository.IS_PUBLIC);
+
+                do {
+                    // And extract each repository
+                    Repository repository = new Repository();
+                    repository.setId(cursor.getInt(idIndex));
+                    repository.setName(cursor.getString(nameIndex));
+                    repository.setDescription(cursor.getString(descriptionIndex));
+                    repository.setPrivate(cursor.getInt(isPublicIndex) == 0);
+                    myRepos.add(repository);
+                } while (cursor.moveToNext());  // While iterating over the cursor
+
+                // Show the repositories in the UI
+                mAdapter.setData(myRepos);
+                mAdapter.notifyDataSetChanged();
+
+                // Don't forget to free the cursor
+                cursor.close();
+            }
+        }
     }
 
     private void fetchRepositories() {
@@ -84,7 +144,8 @@ public class RepositoriesActivity extends AppCompatActivity {
             public void onResponse(Call<List<Repository>> call, Response<List<Repository>> response) {
                 if (response.isSuccessful()) {
                     List<Repository> repositories = response.body();
-                    updateUI(repositories);
+                    // Instead of showing data in the UI, we are not first storing the data in local database
+                    handleNetworkResponse(repositories);
                 } else {
                     Toast.makeText(RepositoriesActivity.this, "An error occurred!", Toast.LENGTH_SHORT).show();
                     Utils.LogOut(RepositoriesActivity.this);
@@ -99,9 +160,29 @@ public class RepositoriesActivity extends AppCompatActivity {
         });
     }
 
-    private void updateUI(List<Repository> repositories) {
-        mAdapter.setData(repositories);
-        mAdapter.notifyDataSetChanged();
+    private void handleNetworkResponse(List<Repository> repositories) {
+        // For each repository retrieved from the networking interface
+        for (Repository repository : repositories) {
+            ContentValues values = new ContentValues();
+            values.put(DbContract.Repository.ID, repository.getId());
+            values.put(DbContract.Repository.NAME, repository.getName());
+            values.put(DbContract.Repository.DESCRIPTION, repository.getDescription());
+            values.put(DbContract.Repository.IS_PUBLIC, !repository.getPrivate());
+            values.put(DbContract.Repository.DEFAULT_BRANCH, repository.getDefaultBranch());
+            values.put(DbContract.Repository.OWNER_ID, repository.getOwner().getId());
+
+            try {
+                // Try to add it
+                mDbConnection.insertOrThrow(DbContract.Repository.TABLE, null, values);
+            } catch(SQLException ignored) {
+                // If it already exists, update it
+                String selection = DbContract.Repository.ID + "=" + repository.getId();
+                mDbConnection.update(DbContract.Repository.TABLE, values, selection, null);
+            }
+        }
+
+        // And then refresh the UI based on the database state
+        updateUIFromDb();
     }
 
     @Override
