@@ -13,3 +13,4 @@ session[number] - Code that should have been completed by the end of that sessio
 | [Session 9](https://github.com/upbsvworkshop/android/tree/session9) | Fragments: added a Repository Details Fragment reused in two different activities |
 | [Session 10](https://github.com/upbsvworkshop/android/tree/session10) | Advanced Fragments: added a DialogFragment for logging out and a PreferenceFragment for the repositories query |
 | [Session 11](https://github.com/upbsvworkshop/android/tree/session11) | SQLite Basics: creating a persistent database using SQLite for storing profile and repository data |
+| [Session 12](https://github.com/upbsvworkshop/android/tree/session12) | Loading network images with Picasso and implementing our first Content Provider |

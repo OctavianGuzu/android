@@ -5,7 +5,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.SQLException;
-import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
@@ -29,7 +29,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import ro.softvision.androidworkshop.database.DbContract;
-import ro.softvision.androidworkshop.database.MySqlHelper;
+import ro.softvision.androidworkshop.database.GithubContentProvider;
 import ro.softvision.androidworkshop.model.GitHubService;
 import ro.softvision.androidworkshop.model.Repository;
 
@@ -38,7 +38,6 @@ public class RepositoriesActivity extends AppCompatActivity {
 
     private Adapter mAdapter;
     private boolean mCanShowDetails = false;
-    private SQLiteDatabase mDbConnection;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -72,10 +71,6 @@ public class RepositoriesActivity extends AppCompatActivity {
         });
         recyclerView.setAdapter(mAdapter);
 
-        // Establish the link to the database
-        MySqlHelper mMySqlHelper = new MySqlHelper(this);
-        mDbConnection = mMySqlHelper.getWritableDatabase();
-
         // Populate the list with whatever data with have in the local database (so we don't have
         // an empty screen when fetching repositories from the network). Also, in case of no
         // internet connection, we still have something to show in the UI.
@@ -84,19 +79,9 @@ public class RepositoriesActivity extends AppCompatActivity {
         fetchRepositories();
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        // Don't forget to close the link to the database
-        if (mDbConnection != null) {
-            mDbConnection.close();
-        }
-    }
-
     private void updateUIFromDb() {
         // Fetch all of the repositories from the local database
-        Cursor cursor = mDbConnection.query(DbContract.Repository.TABLE, null, null, null, null,
-                null, null, null);
+        Cursor cursor = getContentResolver().query(GithubContentProvider.REPOSITORY_URI, null, null, null, null);
 
         if (cursor != null) {
             if (cursor.moveToFirst()) { // Move to the first position in the cursor
@@ -173,11 +158,11 @@ public class RepositoriesActivity extends AppCompatActivity {
 
             try {
                 // Try to add it
-                mDbConnection.insertOrThrow(DbContract.Repository.TABLE, null, values);
+                getContentResolver().insert(GithubContentProvider.REPOSITORY_URI, values);
             } catch(SQLException ignored) {
                 // If it already exists, update it
                 String selection = DbContract.Repository.ID + "=" + repository.getId();
-                mDbConnection.update(DbContract.Repository.TABLE, values, selection, null);
+                getContentResolver().update(GithubContentProvider.REPOSITORY_URI, values, selection, null);
             }
         }
 

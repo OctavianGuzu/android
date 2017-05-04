@@ -5,10 +5,10 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.SQLException;
-import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
+import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.TextUtils;
@@ -21,11 +21,13 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.squareup.picasso.Picasso;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import ro.softvision.androidworkshop.database.DbContract;
-import ro.softvision.androidworkshop.database.MySqlHelper;
+import ro.softvision.androidworkshop.database.GithubContentProvider;
 import ro.softvision.androidworkshop.model.GitHubService;
 import ro.softvision.androidworkshop.model.Profile;
 
@@ -43,8 +45,6 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     private TextView mPrivateRepos;
     private Profile mDisplayedProfile;
     private Dialog mLogoutDialog;
-
-    private SQLiteDatabase mDbConnection;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,25 +64,12 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         findViewById(R.id.btn_blog).setOnClickListener(this);
         findViewById(R.id.btn_repositories).setOnClickListener(this);
 
-        // Establish the link to the database
-        MySqlHelper mySqlHelper = new MySqlHelper(this);
-        mDbConnection = mySqlHelper.getWritableDatabase();
-
         // Populate the UI with whatever data with have in the local database (so we don't have
         // an empty screen when fetching the profile from the network). Also, in case of no
         // internet connection, we still have something to show in the UI.
         updateUIFromDb();
         //  Finally attempt to fetch the repositories
         fetchProfile();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        // Don't forget to close the link to the database
-        if (mDbConnection != null) {
-            mDbConnection.close();
-        }
     }
 
     private void fetchProfile() {
@@ -127,13 +114,13 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         values.put(DbContract.Profile.OWNED_PRIVATE_REPOS, profile.getOwnedPrivateRepos());
 
         try {
-            mDbConnection.insertOrThrow(DbContract.Profile.TABLE, null, values);
+            getContentResolver().insert(GithubContentProvider.PROFILE_URI, values);
         } catch (SQLException ignored) {
             String selection = DbContract.Profile.ID + "=?";
             String[] selectionArgs = new String[] {
                     String.valueOf(profile.getId())
             };
-            mDbConnection.update(DbContract.Profile.TABLE, values, selection, selectionArgs);
+            getContentResolver().update(GithubContentProvider.PROFILE_URI, values, selection, selectionArgs);
         }
 
         updateUIFromDb();
@@ -142,7 +129,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
 
     private void updateUIFromDb() {
         // Fetch all of the repositories from the local database
-        Cursor cursor = mDbConnection.query(DbContract.Profile.TABLE, null, null, null, null, null, null, null);
+        Cursor cursor = getContentResolver().query(GithubContentProvider.PROFILE_URI, null, null, null, null);
 
         if (cursor != null) {
             if (cursor.moveToFirst()) { // Move to the first position in the cursor
@@ -185,8 +172,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
 
     private void updateUI(Profile profile) {
         mDisplayedProfile = profile;
-        //  TODO: load an image URL into the ImageView
-//        mProfilePicture.setImageResource(R.drawable.octocat);
+        Picasso.with(this).load(Uri.parse(profile.getAvatarUrl())).into(mProfilePicture);
         mName.setText(profile.getName());
         mOrganization.setText(profile.getCompany());
         mBio.setText(profile.getBio());
@@ -249,8 +235,8 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         if (dialog == mLogoutDialog) {
             // Clean up the local database (if another user will be logging in, we don't want the
             // previous user's info to be available for him)
-            mDbConnection.delete(DbContract.Profile.TABLE, null, null);
-            mDbConnection.delete(DbContract.Repository.TABLE, null, null);
+            getContentResolver().delete(GithubContentProvider.PROFILE_URI, null, null);
+            getContentResolver().delete(GithubContentProvider.REPOSITORY_URI, null, null);
 
             // Log the user out from the UI
             Utils.LogOut(this);

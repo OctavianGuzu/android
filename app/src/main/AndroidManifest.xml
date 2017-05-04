@@ -24,6 +24,12 @@
         <activity android:name=".RepositoriesActivity" />
         <activity android:name=".RepositoryDetailsActivity" />
         <activity android:name=".PreferencesActivity" />
+
+        <provider
+            android:name=".database.GithubContentProvider"
+            android:authorities="ro.softvision.androidworkshop.provider"
+            android:enabled="true"
+            android:exported="false"/>
     </application>
 
 </manifest>
