@@ -52,7 +52,7 @@ public class GithubContentProvider extends ContentProvider {
             .appendPath("repositories")
             .build();
     public static final Uri PROFILE_URI = CONTENT_URI.buildUpon()
-            .appendPath("profiles")
+            .appendPath("profile")
             .build();
 
     /**
@@ -69,9 +69,9 @@ public class GithubContentProvider extends ContentProvider {
         // Exposing a single repository
         sUriMatcher.addURI(AUTHORITY, "repositories/#", Entities.REPOSITORY);
         // Exposing all profiles
-        sUriMatcher.addURI(AUTHORITY, "profiles", Entities.PROFILES);
+        sUriMatcher.addURI(AUTHORITY, "profile", Entities.PROFILES);
         // Exposing a single profile
-        sUriMatcher.addURI(AUTHORITY, "profiles/#", Entities.PROFILE);
+        sUriMatcher.addURI(AUTHORITY, "profile/#", Entities.PROFILE);
     }
 
     /**
@@ -183,34 +183,47 @@ public class GithubContentProvider extends ContentProvider {
             selection = "1";
         }
 
+        Cursor cursor = null;
+
         // Use the URI matcher to determine the entity and operation type (single/multi-line)
         switch (sUriMatcher.match(uri)) {
             case Entities.REPOSITORIES: {
                 // Requesting all repositories
-                return mySqlHelper.getReadableDatabase().query(DbContract.Repository.TABLE,
+                cursor = mySqlHelper.getReadableDatabase().query(DbContract.Repository.TABLE,
                         projection, selection, selectionArgs, null, null, sortOrder);
+                break;
             }
             case Entities.REPOSITORY: {
                 // Building upon the selection to just choose the corresponding repository
                 String sqlSelection = " AND " + DbContract.Repository.ID + "=" + uri.getLastPathSegment();
-                return mySqlHelper.getReadableDatabase().query(DbContract.Repository.TABLE,
+                cursor = mySqlHelper.getReadableDatabase().query(DbContract.Repository.TABLE,
                         projection, selection + sqlSelection, selectionArgs, null, null, sortOrder);
+                break;
             }
             case Entities.PROFILES: {
                 // Requesting all profiles
-                return mySqlHelper.getReadableDatabase().query(DbContract.Profile.TABLE,
+                cursor = mySqlHelper.getReadableDatabase().query(DbContract.Profile.TABLE,
                         projection, selection, selectionArgs, null, null, sortOrder);
+                break;
             }
             case Entities.PROFILE: {
                 // Building upon the selection to just choose the corresponding profile
                 String sqlSelection = " AND " + DbContract.Profile.ID + "=" + uri.getLastPathSegment();
-                return mySqlHelper.getReadableDatabase().query(DbContract.Profile.TABLE,
+                cursor = mySqlHelper.getReadableDatabase().query(DbContract.Profile.TABLE,
                         projection, (TextUtils.isEmpty(selection) ? "1" : selection)
                                 + sqlSelection, selectionArgs, null, null, sortOrder);
+                break;
+            }
+            default: {
+                throw new UnsupportedOperationException("Not yet implemented");
             }
         }
 
-        throw new UnsupportedOperationException("Not yet implemented");
+        if (cursor != null) {
+            cursor.setNotificationUri(getContext().getContentResolver(), uri);
+        }
+
+        return cursor;
     }
 
     /**

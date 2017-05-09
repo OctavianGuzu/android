@@ -8,6 +8,9 @@ import android.database.SQLException;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.text.SpannableString;
 import android.text.Spanned;
@@ -31,8 +34,9 @@ import ro.softvision.androidworkshop.database.GithubContentProvider;
 import ro.softvision.androidworkshop.model.GitHubService;
 import ro.softvision.androidworkshop.model.Profile;
 
-public class ProfileActivity extends AppCompatActivity implements View.OnClickListener, Dialog.Callbacks {
+public class ProfileActivity extends AppCompatActivity implements View.OnClickListener, Dialog.Callbacks, LoaderManager.LoaderCallbacks<Cursor> {
 
+    private static final int LOADER_PROFILE = R.string.loader_profile;
     private ImageView mProfilePicture;
     private TextView mName;
     private TextView mOrganization;
@@ -128,9 +132,11 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
 
 
     private void updateUIFromDb() {
-        // Fetch all of the repositories from the local database
-        Cursor cursor = getContentResolver().query(GithubContentProvider.PROFILE_URI, null, null, null, null);
+        // Fetch the profile from the local database asynchronously
+        getSupportLoaderManager().initLoader(LOADER_PROFILE, null, this);
+    }
 
+    private void updateFromCursor(Cursor cursor) {
         if (cursor != null) {
             if (cursor.moveToFirst()) { // Move to the first position in the cursor
                 // Extract all of the column indexes based on the column names
@@ -165,8 +171,6 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
                 // And show it in the UI
                 updateUI(profile);
             }
-            // Don't forget to free the cursor
-            cursor.close();
         }
     }
 
@@ -246,5 +250,24 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     @Override
     public void onDialogNegativeClick(Dialog dialog) {
         //  Do nothing
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        switch (id) {
+            case LOADER_PROFILE:
+                return new CursorLoader(this, GithubContentProvider.PROFILE_URI, null, null, null, null);
+        }
+        return new CursorLoader(this);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        updateFromCursor(data);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+
     }
 }

@@ -21,4 +21,5 @@
     <string name="summary_affiliation">Affiliation option for fetching repositories</string>
     <string name="sort">Sort</string>
     <string name="summary_sort">Sort criteria for repositories</string>
+    <string name="clear_repositories">Clear repositories</string>
 </resources>

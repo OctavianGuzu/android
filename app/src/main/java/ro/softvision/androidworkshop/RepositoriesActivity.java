@@ -5,11 +5,13 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.SQLException;
-import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -33,8 +35,10 @@ import ro.softvision.androidworkshop.database.GithubContentProvider;
 import ro.softvision.androidworkshop.model.GitHubService;
 import ro.softvision.androidworkshop.model.Repository;
 
-public class RepositoriesActivity extends AppCompatActivity {
+public class RepositoriesActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
     private static final int CODE_SETTINGS = 0;
+
+    private static final int LOADER_REPOSITORIES = R.string.loader_repositories;
 
     private Adapter mAdapter;
     private boolean mCanShowDetails = false;
@@ -80,9 +84,11 @@ public class RepositoriesActivity extends AppCompatActivity {
     }
 
     private void updateUIFromDb() {
-        // Fetch all of the repositories from the local database
-        Cursor cursor = getContentResolver().query(GithubContentProvider.REPOSITORY_URI, null, null, null, null);
+        // Fetch all of the repositories from the local database asynchronously
+        getSupportLoaderManager().initLoader(LOADER_REPOSITORIES, null, this);
+    }
 
+    private void updateFromCursor(Cursor cursor) {
         if (cursor != null) {
             if (cursor.moveToFirst()) { // Move to the first position in the cursor
                 // Extract all of the column indexes based on the column names
@@ -105,9 +111,6 @@ public class RepositoriesActivity extends AppCompatActivity {
                 // Show the repositories in the UI
                 mAdapter.setData(myRepos);
                 mAdapter.notifyDataSetChanged();
-
-                // Don't forget to free the cursor
-                cursor.close();
             }
         }
     }
@@ -165,9 +168,6 @@ public class RepositoriesActivity extends AppCompatActivity {
                 getContentResolver().update(GithubContentProvider.REPOSITORY_URI, values, selection, null);
             }
         }
-
-        // And then refresh the UI based on the database state
-        updateUIFromDb();
     }
 
     @Override
@@ -199,6 +199,30 @@ public class RepositoriesActivity extends AppCompatActivity {
                     break;
             }
         }
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        switch (id) {
+            case LOADER_REPOSITORIES:
+                return new CursorLoader(this, GithubContentProvider.REPOSITORY_URI,
+                        null, null, null, null);
+        }
+        return new CursorLoader(this);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        switch (loader.getId()) {
+            case LOADER_REPOSITORIES:
+                updateFromCursor(data);
+                break;
+        }
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+
     }
 
     private static class Adapter extends RecyclerView.Adapter {
