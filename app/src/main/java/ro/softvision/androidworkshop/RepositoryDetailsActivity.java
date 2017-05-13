@@ -19,12 +19,7 @@ public class RepositoryDetailsActivity extends AppCompatActivity {
             return ;
         }
 
-        Repository repository = new Repository();
-
-        repository.setDescription(getIntent().getStringExtra(Contract.RepositoryDetails.DESCRIPTION));
-        repository.setPrivate(!getIntent().getBooleanExtra(Contract.RepositoryDetails.IS_PUBLIC, true));
-        repository.setUrl(getIntent().getStringExtra(Contract.RepositoryDetails.URL));
-        repository.setHtmlUrl(getIntent().getStringExtra(Contract.RepositoryDetails.HTML_URL));
+        Repository repository = getIntent().getParcelableExtra("repository");
 
         FragmentManager fragmentManager = getSupportFragmentManager();
         if (fragmentManager.findFragmentById(android.R.id.content) == null) {

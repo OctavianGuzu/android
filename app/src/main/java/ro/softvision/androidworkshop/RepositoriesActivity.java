@@ -65,10 +65,7 @@ public class RepositoriesActivity extends AppCompatActivity implements LoaderMan
                             .commit();
                 } else {
                     Intent intent = new Intent(RepositoriesActivity.this, RepositoryDetailsActivity.class);
-                    intent.putExtra(Contract.RepositoryDetails.DESCRIPTION, repository.getDescription());
-                    intent.putExtra(Contract.RepositoryDetails.IS_PUBLIC, !repository.getPrivate());
-                    intent.putExtra(Contract.RepositoryDetails.URL, repository.getUrl());
-                    intent.putExtra(Contract.RepositoryDetails.HTML_URL, repository.getHtmlUrl());
+                    intent.putExtra("repository", repository);
                     startActivity(intent);
                 }
             }

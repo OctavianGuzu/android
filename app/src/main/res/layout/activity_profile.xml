@@ -225,7 +225,7 @@
         android:id="@+id/btn_repositories"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/blog_btn_bg"
+        android:background="@drawable/blog_btn_contact"
         android:gravity="center"
         android:padding="@dimen/padding_medium"
         android:layout_marginBottom="@dimen/margin_small">
@@ -243,10 +243,10 @@
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/btn_blog"
+        android:id="@+id/btn_send_email"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/blog_btn_bg"
+        android:background="@drawable/blog_btn_contact"
         android:gravity="center"
         android:padding="@dimen/padding_medium">
 
@@ -255,7 +255,7 @@
             android:layout_height="wrap_content"
             android:background="@android:color/transparent"
             android:textAllCaps="false"
-            android:text="@string/view_blog"
+            android:text="@string/send_email"
             android:drawableLeft="@drawable/ic_language_black_24dp"
             android:drawablePadding="@dimen/padding_medium"
             android:gravity="center"/>

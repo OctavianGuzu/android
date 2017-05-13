@@ -65,7 +65,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         mUpdated = (TextView) findViewById(R.id.updated);
         mPublicRepos = (TextView) findViewById(R.id.public_repos);
         mPrivateRepos = (TextView) findViewById(R.id.private_repos);
-        findViewById(R.id.btn_blog).setOnClickListener(this);
+        findViewById(R.id.btn_send_email).setOnClickListener(this);
         findViewById(R.id.btn_repositories).setOnClickListener(this);
 
         // Populate the UI with whatever data with have in the local database (so we don't have
@@ -205,10 +205,16 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.btn_blog:
-                //  TODO: open a screen displaying the Blog URL
-                Toast.makeText(this, "Opening Blog screen at URL: " + mDisplayedProfile.getBlog(),
-                        Toast.LENGTH_SHORT).show();
+            case R.id.btn_send_email:
+                // Create an implicit for sending an email
+                Intent view = new Intent(Intent.ACTION_SENDTO);
+                view.setData(Uri.parse("mailto:" + mDisplayedProfile.getEmail()));
+                // But first check if there is any app that can handle our request
+                if (view.resolveActivity(getPackageManager()) != null) {
+                    startActivity(view);
+                } else {
+                    Toast.makeText(getApplicationContext(), "Cannot send email", Toast.LENGTH_SHORT).show();
+                }
                 break;
             case R.id.btn_repositories:
                 startActivity(new Intent(this, RepositoriesActivity.class));

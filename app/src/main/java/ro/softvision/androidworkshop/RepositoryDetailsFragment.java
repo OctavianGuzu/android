@@ -22,10 +22,7 @@ public class RepositoryDetailsFragment extends Fragment {
     public static Fragment New(Repository repository) {
         Fragment f = new RepositoryDetailsFragment();
         Bundle args = new Bundle();
-        args.putString(Contract.RepositoryDetails.DESCRIPTION, repository.getDescription());
-        args.putBoolean(Contract.RepositoryDetails.IS_PUBLIC, !repository.getPrivate());
-        args.putString(Contract.RepositoryDetails.URL, repository.getUrl());
-        args.putString(Contract.RepositoryDetails.HTML_URL, repository.getHtmlUrl());
+        args.putParcelable("repository", repository);
         f.setArguments(args);
         return f;
     }
@@ -40,11 +37,7 @@ public class RepositoryDetailsFragment extends Fragment {
         Bundle args = getArguments();
 
         if (args != null && !args.isEmpty()) {
-            mRepository = new Repository();
-            mRepository.setDescription(args.getString(Contract.RepositoryDetails.DESCRIPTION));
-            mRepository.setPrivate(!args.getBoolean(Contract.RepositoryDetails.IS_PUBLIC));
-            mRepository.setUrl(args.getString(Contract.RepositoryDetails.URL));
-            mRepository.setHtmlUrl(args.getString(Contract.RepositoryDetails.HTML_URL));
+            mRepository = args.getParcelable("repository");
         }
     }
 

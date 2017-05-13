@@ -1,9 +1,16 @@
 package ro.softvision.androidworkshop.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class Owner {
+/**
+ * The Owner data model which implements the Parcelable interface for easily sending it to
+ * other components (i.e. Activities)
+ */
+public class Owner implements Parcelable {
 
     @SerializedName("login")
     @Expose
@@ -56,6 +63,36 @@ public class Owner {
     @SerializedName("site_admin")
     @Expose
     private Boolean siteAdmin;
+
+    protected Owner(Parcel in) {
+        login = in.readString();
+        avatarUrl = in.readString();
+        gravatarId = in.readString();
+        url = in.readString();
+        htmlUrl = in.readString();
+        followersUrl = in.readString();
+        followingUrl = in.readString();
+        gistsUrl = in.readString();
+        starredUrl = in.readString();
+        subscriptionsUrl = in.readString();
+        organizationsUrl = in.readString();
+        reposUrl = in.readString();
+        eventsUrl = in.readString();
+        receivedEventsUrl = in.readString();
+        type = in.readString();
+    }
+
+    public static final Creator<Owner> CREATOR = new Creator<Owner>() {
+        @Override
+        public Owner createFromParcel(Parcel in) {
+            return new Owner(in);
+        }
+
+        @Override
+        public Owner[] newArray(int size) {
+            return new Owner[size];
+        }
+    };
 
     public String getLogin() {
         return login;
@@ -193,4 +230,27 @@ public class Owner {
         this.siteAdmin = siteAdmin;
     }
 
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(login);
+        dest.writeString(avatarUrl);
+        dest.writeString(gravatarId);
+        dest.writeString(url);
+        dest.writeString(htmlUrl);
+        dest.writeString(followersUrl);
+        dest.writeString(followingUrl);
+        dest.writeString(gistsUrl);
+        dest.writeString(starredUrl);
+        dest.writeString(subscriptionsUrl);
+        dest.writeString(organizationsUrl);
+        dest.writeString(reposUrl);
+        dest.writeString(eventsUrl);
+        dest.writeString(receivedEventsUrl);
+        dest.writeString(type);
+    }
 }
