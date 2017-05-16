@@ -1,19 +1,2 @@
-# Branch description
-session[number] - Code that should have been completed by the end of that session. Use this for inspiration.
-
-## Session descriptions
-| Session | Description |
-| ------------- | ------------- |
-| [Session 2](https://github.com/upbsvworkshop/android/tree/session2) | Creating a GitHub application login screen. Learning to use a LinearLayout or Relativeayout and basic Views. |
-| [Session 3](https://github.com/upbsvworkshop/android/tree/session3) | Navigating through multiple screens. Creating the applications Profile Activity. |
-| [Session 4](https://github.com/upbsvworkshop/android/tree/session4) | Basic persistence using SharedPreferences (Login screen is not displayed if the user already logged in). Adding menus (Log Out in Profile screen's menu). Using resources: per screen density drawables, strings, dimens, colors. |
-| [Session 6](https://github.com/upbsvworkshop/android/tree/session6) | RecyclerView: basic adapter to display the repositories. |
-| [Session 7](https://github.com/upbsvworkshop/android/tree/session7) | Retrofit: basic networking interface for authentication. |
-| [Session 8](https://github.com/upbsvworkshop/android/tree/session8) | Retrofit: extending the networking interface for fetching the user's profile and owned repository list. |
-| [Session 9](https://github.com/upbsvworkshop/android/tree/session9) | Fragments: added a Repository Details Fragment reused in two different activities. |
-| [Session 10](https://github.com/upbsvworkshop/android/tree/session10) | Advanced Fragments: added a DialogFragment for logging out and a PreferenceFragment for the repositories query. |
-| [Session 11](https://github.com/upbsvworkshop/android/tree/session11) | SQLite Basics: creating a persistent database using SQLite for storing profile and repository data. |
-| [Session 12](https://github.com/upbsvworkshop/android/tree/session12) | Loading network images with Picasso and implementing our first Content Provider. |
-| [Session 13](https://github.com/upbsvworkshop/android/tree/session13) | Loading data asynchronously from the DB using CursorLoaders. |
-| [Session 14](https://github.com/upbsvworkshop/android/tree/session14) | Intents and Parcelables |
-| [Session 15](https://github.com/upbsvworkshop/android/tree/session15) | Services: IntentService |
+# Session description
+Services: Moving profile and repositories sync to an IntentService
