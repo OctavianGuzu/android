@@ -1,13 +1,9 @@
 package ro.softvision.androidworkshop;
 
-import android.content.ContentValues;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.database.SQLException;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
@@ -26,13 +22,10 @@ import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 import ro.softvision.androidworkshop.database.DbContract;
 import ro.softvision.androidworkshop.database.GithubContentProvider;
-import ro.softvision.androidworkshop.model.GitHubService;
 import ro.softvision.androidworkshop.model.Profile;
+import ro.softvision.androidworkshop.services.SyncService;
 
 public class ProfileActivity extends AppCompatActivity implements View.OnClickListener, Dialog.Callbacks, LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -73,63 +66,14 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         // internet connection, we still have something to show in the UI.
         updateUIFromDb();
         //  Finally attempt to fetch the repositories
-        fetchProfile();
+        syncProfile();
     }
 
-    private void fetchProfile() {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        Call<Profile> profileCall =
-                GitHubService.Service.Get().getUserProfile(preferences.getString(Contract.Preferences.AUTH_HASH, null));
-
-        profileCall.enqueue(new Callback<Profile>() {
-            @Override
-            public void onResponse(Call<Profile> call, Response<Profile> response) {
-                if (response.isSuccessful()) {
-                    Profile profile = response.body();
-                    handleNetworkResponse(profile);
-                } else {
-                    Toast.makeText(ProfileActivity.this, "An error occurred!", Toast.LENGTH_SHORT).show();
-                    Utils.LogOut(ProfileActivity.this);
-                }
-            }
-
-            @Override
-            public void onFailure(Call<Profile> call, Throwable t) {
-                t.printStackTrace();
-                Toast.makeText(ProfileActivity.this, "No Internet connection", Toast.LENGTH_SHORT).show();
-            }
-        });
+    private void syncProfile() {
+        Intent intent = new Intent(this, SyncService.class);
+        intent.setAction(Contract.Sync.ACTION_SYNC_PROFILE);
+        startService(intent);
     }
-
-    private void handleNetworkResponse(Profile profile) {
-        // Serialize the profile in a DB-relatable format
-        ContentValues values = new ContentValues();
-        values.put(DbContract.Profile.ID, profile.getId());
-        values.put(DbContract.Profile.LOGIN, profile.getLogin());
-        values.put(DbContract.Profile.NAME, profile.getName());
-        values.put(DbContract.Profile.COMPANY, profile.getCompany());
-        values.put(DbContract.Profile.AVATAR_URL, profile.getAvatarUrl());
-        values.put(DbContract.Profile.BIO, profile.getBio());
-        values.put(DbContract.Profile.EMAIL, profile.getEmail());
-        values.put(DbContract.Profile.LOCATION, profile.getLocation());
-        values.put(DbContract.Profile.CREATED_AT, profile.getCreatedAt());
-        values.put(DbContract.Profile.UPDATED_AT, profile.getUpdatedAt());
-        values.put(DbContract.Profile.PUBLIC_REPOS, profile.getPublicRepos());
-        values.put(DbContract.Profile.OWNED_PRIVATE_REPOS, profile.getOwnedPrivateRepos());
-
-        try {
-            getContentResolver().insert(GithubContentProvider.PROFILE_URI, values);
-        } catch (SQLException ignored) {
-            String selection = DbContract.Profile.ID + "=?";
-            String[] selectionArgs = new String[] {
-                    String.valueOf(profile.getId())
-            };
-            getContentResolver().update(GithubContentProvider.PROFILE_URI, values, selection, selectionArgs);
-        }
-
-        updateUIFromDb();
-    }
-
 
     private void updateUIFromDb() {
         // Fetch the profile from the local database asynchronously

@@ -45,4 +45,9 @@ public class Utils {
         }
         return toString;
     }
+
+    public static void LogOut(Context context) {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        preferences.edit().remove(Contract.Preferences.AUTH_HASH).apply();
+    }
 }

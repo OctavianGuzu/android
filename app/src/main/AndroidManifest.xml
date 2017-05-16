@@ -30,6 +30,9 @@
             android:authorities="ro.softvision.androidworkshop.provider"
             android:enabled="true"
             android:exported="false"/>
+
+        <service android:name=".services.SyncService"
+            android:exported="false"/>
     </application>
 
 </manifest>

@@ -34,4 +34,9 @@ public interface Contract {
         String MESSAGE = "message";
         String TITLE = "title";
     }
+
+    interface Sync {
+        String ACTION_SYNC_PROFILE = "ro.softvision.sync_profile";
+        String ACTION_SYNC_REPOSITORIES = "ro.softvision.sync_repositories";
+    }
 }

@@ -1,12 +1,8 @@
 package ro.softvision.androidworkshop;
 
-import android.content.ContentValues;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.database.SQLException;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
@@ -22,18 +18,14 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 import ro.softvision.androidworkshop.database.DbContract;
 import ro.softvision.androidworkshop.database.GithubContentProvider;
-import ro.softvision.androidworkshop.model.GitHubService;
 import ro.softvision.androidworkshop.model.Repository;
+import ro.softvision.androidworkshop.services.SyncService;
 
 public class RepositoriesActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
     private static final int CODE_SETTINGS = 0;
@@ -77,7 +69,13 @@ public class RepositoriesActivity extends AppCompatActivity implements LoaderMan
         // internet connection, we still have something to show in the UI.
         updateUIFromDb();
         //  Finally attempt to fetch the repositories
-        fetchRepositories();
+        syncRepositories();
+    }
+
+    private void syncRepositories() {
+        Intent intent = new Intent(this, SyncService.class);
+        intent.setAction(Contract.Sync.ACTION_SYNC_REPOSITORIES);
+        startService(intent);
     }
 
     private void updateUIFromDb() {
@@ -112,61 +110,6 @@ public class RepositoriesActivity extends AppCompatActivity implements LoaderMan
         }
     }
 
-    private void fetchRepositories() {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        String affiliation = Contract.RepositoryActivity.AFFILIATION_DEFAULT;
-        if (preferences.contains(Contract.Preferences.Repositories.AFFILIATION)) {
-            affiliation = Utils.SetToRetrofitQueryString(preferences.getStringSet(Contract.Preferences.Repositories.AFFILIATION, null));
-        }
-        Call<List<Repository>> repositoriesCall =
-                GitHubService.Service.Get().getUserRepositories(
-                        preferences.getString(Contract.Preferences.AUTH_HASH, null),
-                        affiliation,
-                        preferences.getString(Contract.Preferences.Repositories.SORT, Contract.RepositoryActivity.SORT_DEFAULT));
-
-        repositoriesCall.enqueue(new Callback<List<Repository>>() {
-            @Override
-            public void onResponse(Call<List<Repository>> call, Response<List<Repository>> response) {
-                if (response.isSuccessful()) {
-                    List<Repository> repositories = response.body();
-                    // Instead of showing data in the UI, we are not first storing the data in local database
-                    handleNetworkResponse(repositories);
-                } else {
-                    Toast.makeText(RepositoriesActivity.this, "An error occurred!", Toast.LENGTH_SHORT).show();
-                    Utils.LogOut(RepositoriesActivity.this);
-                }
-            }
-
-            @Override
-            public void onFailure(Call<List<Repository>> call, Throwable t) {
-                t.printStackTrace();
-                Toast.makeText(RepositoriesActivity.this, "No Internet connection", Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
-    private void handleNetworkResponse(List<Repository> repositories) {
-        // For each repository retrieved from the networking interface
-        for (Repository repository : repositories) {
-            ContentValues values = new ContentValues();
-            values.put(DbContract.Repository.ID, repository.getId());
-            values.put(DbContract.Repository.NAME, repository.getName());
-            values.put(DbContract.Repository.DESCRIPTION, repository.getDescription());
-            values.put(DbContract.Repository.IS_PUBLIC, !repository.getPrivate());
-            values.put(DbContract.Repository.DEFAULT_BRANCH, repository.getDefaultBranch());
-            values.put(DbContract.Repository.OWNER_ID, repository.getOwner().getId());
-
-            try {
-                // Try to add it
-                getContentResolver().insert(GithubContentProvider.REPOSITORY_URI, values);
-            } catch(SQLException ignored) {
-                // If it already exists, update it
-                String selection = DbContract.Repository.ID + "=" + repository.getId();
-                getContentResolver().update(GithubContentProvider.REPOSITORY_URI, values, selection, null);
-            }
-        }
-    }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater menuInflater = getMenuInflater();
@@ -192,7 +135,7 @@ public class RepositoriesActivity extends AppCompatActivity implements LoaderMan
             switch (requestCode) {
                 case CODE_SETTINGS:
                     //  We refresh in case the settings changed
-                    fetchRepositories();
+                    syncRepositories();
                     break;
             }
         }
